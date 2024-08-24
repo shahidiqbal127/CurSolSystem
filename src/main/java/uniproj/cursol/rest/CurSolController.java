@@ -95,10 +95,10 @@ public class CurSolController {
         maxIdEntity.setMaxId(maxId);
         maxIdRepository.save(maxIdEntity);
 
-        exchangeRateService.fetchAndStoreExchangeRates();
         taptapSendService.storingTaptapSendData();
         lemfiService.storingLemfiData();
-        // Get the maximum ID after insertion
+        exchangeRateService.fetchAndStoreExchangeRates();
+        
 
         return "Exchange Rate Table and Platform table are updated successfully";
     }

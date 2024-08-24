@@ -12,9 +12,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import uniproj.cursol.dao.ExchangeRateRepo;
 import uniproj.cursol.entity.ExchangeRate;
 
@@ -28,8 +31,13 @@ public class LemfiServiceImpl implements LemfiService {
     @Autowired
     private ExchangeRateRepo exchangeRateRepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(LemfiServiceImpl.class);
+
     @Override
+    @Transactional
     public void storingLemfiData() {
+
+        
 
         WebDriver driver = new ChromeDriver();
 
@@ -42,6 +50,8 @@ public class LemfiServiceImpl implements LemfiService {
         List<WebElement> optionsList = gettingSupportedCurrencies(driver);
 
         List<String> currencyCodes = new ArrayList<>();
+
+        try{
 
         for (WebElement option : optionsList) {
             WebElement countryElement = option.findElement(By.cssSelector("p.base-text--size-small--bold"));
@@ -110,12 +120,17 @@ public class LemfiServiceImpl implements LemfiService {
                 dropdownContainerRe.click();
 
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("An error occurred: ", e);
+                // e.printStackTrace();
+                // System.out.println("The problem is here");
             }
 
         }
+    }finally{
 
-        driver.close();
+        driver.quit();
+
+    }
 
     }
 
