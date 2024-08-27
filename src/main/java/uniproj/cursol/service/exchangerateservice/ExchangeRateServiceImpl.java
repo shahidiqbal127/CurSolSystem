@@ -23,7 +23,6 @@ import uniproj.cursol.dto.exchangerateDTOs.LogosDTO;
 import uniproj.cursol.dto.exchangerateDTOs.ProviderDTO;
 import uniproj.cursol.dto.exchangerateDTOs.QuoteDTO;
 import uniproj.cursol.dto.exchangerateDTOs.RootDTO;
-import uniproj.cursol.entity.ExRateMaxId;
 import uniproj.cursol.entity.ExchangeRate;
 import uniproj.cursol.entity.Platform;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
@@ -141,7 +140,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .queryParam("sourceCurrency", sourceCurrency)
                 .queryParam("targetCurrency", targetCurrency)
                 .queryParam("sendAmount", sendAmount)
-                .toUriString();
+                .toUriString(); 
     }
 
     private RootDTO mapToDTO(Root root) {

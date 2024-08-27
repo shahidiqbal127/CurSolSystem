@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Currency;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.checkerframework.checker.units.qual.t;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,18 +21,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import uniproj.cursol.dao.ExchangeRateRepo;
+import uniproj.cursol.dao.ForecastRepo;
 import uniproj.cursol.dao.ExchangeRateReopEM;
 import uniproj.cursol.dao.MaxIdRepository;
 import uniproj.cursol.dto.CurrencyCodeAndFlagsDTO;
 import uniproj.cursol.entity.ContactUs;
 import uniproj.cursol.entity.ExRateMaxId;
-import uniproj.cursol.entity.ExchangeRate;
+import uniproj.cursol.entity.ForecastExchangeRate;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
-import uniproj.cursol.querydtos.ExchangeRateQueryResultHoldNative;
 import uniproj.cursol.service.TaptapSendService.TaptapSendService;
 import uniproj.cursol.service.contactusservice.ContactUsService;
 import uniproj.cursol.service.currencyservice.CurrencyService;
 import uniproj.cursol.service.exchangerateservice.ExchangeRateService;
+import uniproj.cursol.service.forecastservice.ForecastExchangeRateService;
 import uniproj.cursol.service.lemfiservice.LemfiService;
 
 @RestController
@@ -54,6 +56,9 @@ public class CurSolController {
     private LemfiService lemfiService;
 
     @Autowired
+    private ForecastExchangeRateService forecastExchangeRateService;
+
+    @Autowired
     private ExchangeRateRepo exchangeRateRepo;
 
     @Autowired
@@ -61,6 +66,9 @@ public class CurSolController {
 
     @Autowired
     private ContactUsService contactUsService;
+
+    @Autowired
+    private ForecastRepo forecastRepo;
 
     @PostMapping("/ContactUs")
     public ResponseEntity<String> submitContactForm(@RequestBody ContactUs contactUs) {
@@ -98,7 +106,6 @@ public class CurSolController {
         taptapSendService.storingTaptapSendData();
         lemfiService.storingLemfiData();
         exchangeRateService.fetchAndStoreExchangeRates();
-        
 
         return "Exchange Rate Table and Platform table are updated successfully";
     }
@@ -121,6 +128,39 @@ public class CurSolController {
             @RequestParam String target) {
         return exchangeRateRepoEM.findHistoricalExchangeRates(datePattern, source, target);
 
+    }
+
+    @GetMapping("/fetching-forecast-data")
+    public List<ForecastExchangeRate> fetchingForecastData(@RequestParam String currencyPair) {
+        return forecastRepo.gettingAllForecastData(currencyPair);
+    }
+
+    @GetMapping("/storing-forecast_data")
+    // @Scheduled(cron = "0 0 * * * ?")
+    public String fetchForecast() {
+
+        forecastRepo.deleteOldForecasts();
+
+        List<String> currencyPairs = List.of(
+                "GBP to PKR",
+                "GBP to INR",
+                "GBP to NGN",
+                "EURO to PKR",
+                "EURO to INR",
+                "EURO to NGN");
+
+        for (String currencyPair : currencyPairs) {
+
+            IntStream.range(1, 16).forEach(i -> {
+                LocalDate targetDate = LocalDate.now().plusDays(i);
+                forecastExchangeRateService.fetchAndStoreForecast(currencyPair, targetDate);
+            });
+
+            // Call the service method to fetch and store forecast data
+
+        }
+        // Return a success message
+        return "Forecast data fetched and saved successfully!";
     }
 
     @EventListener(ApplicationReadyEvent.class)
