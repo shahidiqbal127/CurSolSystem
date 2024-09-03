@@ -1,8 +1,6 @@
 package uniproj.cursol.api.currencyentities;
 
 import java.util.List;
-
-import uniproj.cursol.dto.currencyDTOs.CurrencyCountryDTO;
 import uniproj.cursol.dto.currencyDTOs.CurrencyFlagDTO;
 
 public class CurrencyFlagApiResponse {

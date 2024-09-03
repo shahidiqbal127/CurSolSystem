@@ -3,16 +3,12 @@ package uniproj.cursol.entity;
 import java.util.Date;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.ColumnResult;
-import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
-import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
+
 
 @Entity
 @Table(name = "exchange_rate")

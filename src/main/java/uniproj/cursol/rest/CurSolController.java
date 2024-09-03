@@ -1,12 +1,10 @@
 package uniproj.cursol.rest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Currency;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
-import org.checkerframework.checker.units.qual.t;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -132,7 +130,23 @@ public class CurSolController {
 
     @GetMapping("/fetching-forecast-data")
     public List<ForecastExchangeRate> fetchingForecastData(@RequestParam String currencyPair) {
-        return forecastRepo.gettingAllForecastData(currencyPair);
+        List<ForecastExchangeRate> forecastList = forecastRepo.gettingAllForecastData(currencyPair);
+        for (ForecastExchangeRate forecast : forecastList) {
+            // Generate a random number between -3 and +3
+            double randomValue = ThreadLocalRandom.current().nextDouble(-1, 3);
+            randomValue++;
+
+            // Add the random value to the predictedValue
+            double adjustedValue = forecast.getPredictedValue() + randomValue;
+            if (adjustedValue > +forecast.getConfidenceIntervalMax()) {
+                forecast.setPredictedValue(forecast.getPredictedValue());
+            } else {
+                forecast.setPredictedValue(adjustedValue);
+            }
+
+        }
+
+        return forecastList;
     }
 
     @GetMapping("/storing-forecast_data")

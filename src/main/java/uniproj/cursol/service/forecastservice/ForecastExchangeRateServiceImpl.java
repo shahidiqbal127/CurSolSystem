@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uniproj.cursol.dao.ForecastRepo;
 import uniproj.cursol.entity.ForecastExchangeRate;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class ForecastExchangeRateServiceImpl implements ForecastExchangeRateService {

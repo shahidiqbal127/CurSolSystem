@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 import uniproj.cursol.api.exchangerateentities.Root;
 import uniproj.cursol.dao.CurrencyRepo;
 import uniproj.cursol.dao.ExchangeRateRepo;
@@ -76,34 +77,67 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         String apiUrlWithParams = buildApiUrl(sourceCurrency, targetCurrency, sendAmount);
 
+        int maxRetries = 3;
+        int retryCount = 0;
+        boolean success = false;
+
+        while (retryCount < maxRetries && !success) {
+            try {
+
         String response = webClient.get()
                 .uri(apiUrlWithParams)
                 .retrieve()
+                .onStatus(status -> status.value() == 429, clientResponse -> {
+                            String retryAfter = clientResponse.headers().asHttpHeaders().getFirst("Retry-After");
+                            System.out.println("Rate limit hit, retrying after " + retryAfter + " seconds...");
+                            int delay = retryAfter != null ? Integer.parseInt(retryAfter) : 5;
+                            return Mono.error(new RateLimitException(delay));
+                        })
                 .bodyToMono(String.class)
                 .block();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Root root;
-        try {
-            root = objectMapper.readValue(response, Root.class);
-        } catch (Exception e) {
-            // Handle JSON parsing error
-            e.printStackTrace();
-            return;
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                Root root;
+                try {
+                    root = objectMapper.readValue(response, Root.class);
+                } catch (Exception e) {
+                    // Handle JSON parsing error
+                    e.printStackTrace();
+                    return;
+                }
+        
+                RootDTO rootDTO = mapToDTO(root);
+        
+                platformService.storingPlatformData(rootDTO);
+        
+                List<Platform> platforms = platformRepo.findAll();
+        
+                for (Platform platform : platforms) {
+                    platformMap.put(platform.getPlatformName(), platform.getPlatformId());
+                }
+        
+                saveToDatabase(rootDTO);
+        
+
+                success = true;
+
+            } catch (RateLimitException e) {
+                // Wait for the suggested time before retrying
+                retryCount++;
+                try {
+                    Thread.sleep(e.getRetryAfterSeconds() * 1000);
+                } catch (InterruptedException interruptedException) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            } catch (Exception e) {
+                System.err.println("Error fetching data: " + e.getMessage());
+                break; // Break on other exceptions, to avoid an infinite loop
+            }
         }
 
-        RootDTO rootDTO = mapToDTO(root);
-
-        platformService.storingPlatformData(rootDTO);
-
-        List<Platform> platforms = platformRepo.findAll();
-
-        for (Platform platform : platforms) {
-            platformMap.put(platform.getPlatformName(), platform.getPlatformId());
-        }
-
-        saveToDatabase(rootDTO);
-
+      
     }
 
     @Transactional
@@ -182,7 +216,6 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     @Override
     public List<ExchangeRate> getExRateBySourceAndTarget(String sourceCurrency, String targetCurrency) {
-        // TODO Auto-generated method stub
         return exchangeRateRepo.getExRateBySourceAndTarget(sourceCurrency, targetCurrency);
     }
 
@@ -198,11 +231,22 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     public List<ExchangeRateQueryResultHoldNative> findHistoricalExchangeRates(String datePattern,
             String sourceCurrency,
             String targetCurrency) {
-        // TODO Auto-generated method stub
+        
 
         return exchangeRateRepo.findHistoricalExchangeRates(datePattern, sourceCurrency, targetCurrency);
     }
 
+    private static class RateLimitException extends RuntimeException {
+        private final int retryAfterSeconds;
+
+        public RateLimitException(int retryAfterSeconds) {
+            this.retryAfterSeconds = retryAfterSeconds;
+        }
+
+        public int getRetryAfterSeconds() {
+            return retryAfterSeconds;
+        }
+    }
     // @Override
     // public List<ExchangeRateQueryResultHold>
     // getExchangeRatesBySourceAndTarget(String sourceCurrency,

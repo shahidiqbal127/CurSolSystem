@@ -37,11 +37,12 @@ public class LemfiServiceImpl implements LemfiService {
     @Transactional
     public void storingLemfiData() {
 
-        
+        // System.setProperty("webdriver.chrome.driver",
+        // "P:\\UniProject\\chrome-win64\\chrome.exe");
 
         WebDriver driver = new ChromeDriver();
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         driver.get("https://lemfi.com/gb/international-money-transfer");
 
@@ -51,86 +52,88 @@ public class LemfiServiceImpl implements LemfiService {
 
         List<String> currencyCodes = new ArrayList<>();
 
-        try{
+        try {
 
-        for (WebElement option : optionsList) {
-            WebElement countryElement = option.findElement(By.cssSelector("p.base-text--size-small--bold"));
-            WebElement currencyElement = option.findElement(By.cssSelector("p.base-text--size-x-small"));
+            for (WebElement option : optionsList) {
+                WebElement countryElement = option.findElement(By.cssSelector("p.base-text--size-small--bold"));
+                WebElement currencyElement = option.findElement(By.cssSelector("p.base-text--size-x-small"));
 
-            String country = countryElement.getText();
-            String currency = currencyElement.getText();
+                String country = countryElement.getText();
+                String currency = currencyElement.getText();
 
-            String currencyCode = currency.split(" ")[0];
-            if (!countryCurrencyMap.containsValue("EUR")) {
-                countryCurrencyMap.put(country, currencyCode);
+                String currencyCode = currency.split(" ")[0];
+                if (!countryCurrencyMap.containsValue("EUR")) {
+                    countryCurrencyMap.put(country, currencyCode);
+                }
+
+                addUniqueEntry(countryCurrencyMap, country, currencyCode);
+
+                if (!currencyCodes.contains(currencyCode)) {
+                    currencyCodes.add(currencyCode);
+                }
+
             }
 
-            addUniqueEntry(countryCurrencyMap, country, currencyCode);
+            for (Map.Entry<String, String> entryS : countryCurrencyMap.entrySet()) {
 
-            if (!currencyCodes.contains(currencyCode)) {
-                currencyCodes.add(currencyCode);
+                try {
+
+                    String xpath = String.format("//p[text()='%s']", entryS.getKey());
+
+                    WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+                    element.click();
+
+                    Thread.sleep(4000);
+                    WebElement detailsElement = wait.until(ExpectedConditions
+                            .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
+
+                    // Extract the exchange rate
+                    WebElement exchangeRateElement = detailsElement
+                            .findElement(
+                                    By.xpath(".//span[contains(text(), 'Exchange rate')]/following-sibling::span"));
+                    String exRate = exchangeRateElement.getText().trim();
+
+                    String[] parts = exRate.split(" ");
+
+                    ExchangeRate exchangeRate = new ExchangeRate();
+
+                    // NumberFormat format = NumberFormat.getInstance(Locale.GERMANY); // Germany
+                    // uses comma as decimal separator
+                    // Number number = format.parse(parts[3]);
+                    // double parsedDouble = number.doubleValue();
+
+                    String numberWithoutComma = parts[3].replaceAll(",", "");
+                    double parsedDouble = Double.parseDouble(numberWithoutComma);
+
+                    exchangeRate.setRate(parsedDouble);
+                    exchangeRate.setPlatform(48);
+                    exchangeRate.setDeliveryFee(0.00);
+                    exchangeRate
+                            .setEstimatedDeliveryTime(
+                                    "2024-06-25T23:59:59.999999999Z - 2024-06-26T00:04:59.999999999Z");
+                    exchangeRate.setFromCurrency("GBP");
+                    exchangeRate.setToCurrency(entryS.getValue());
+                    exchangeRate.setLastUpdated(new Date());
+
+                    exchangeRateRepo.save(exchangeRate);
+
+                    WebElement dropdownContainerRe = driver.findElement(By.xpath(
+                            "//span[contains(@class, 'base-text') and contains(text(), '" + entryS.getValue() + "')]"));
+
+                    dropdownContainerRe.click();
+
+                } catch (Exception e) {
+                    logger.error("An error occurred: ", e);
+                    // e.printStackTrace();
+                    // System.out.println("The problem is here");
+                }
+
             }
+        } finally {
+
+            driver.quit();
 
         }
-
-        for (Map.Entry<String, String> entryS : countryCurrencyMap.entrySet()) {
-
-            try {
-
-                String xpath = String.format("//p[text()='%s']", entryS.getKey());
-
-                WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-                element.click();
-
-                Thread.sleep(3000);
-                WebElement detailsElement = wait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
-
-                // Extract the exchange rate
-                WebElement exchangeRateElement = detailsElement
-                        .findElement(By.xpath(".//span[contains(text(), 'Exchange rate')]/following-sibling::span"));
-                String exRate = exchangeRateElement.getText().trim();
-
-                String[] parts = exRate.split(" ");
-
-                ExchangeRate exchangeRate = new ExchangeRate();
-
-                // NumberFormat format = NumberFormat.getInstance(Locale.GERMANY); // Germany
-                // uses comma as decimal separator
-                // Number number = format.parse(parts[3]);
-                // double parsedDouble = number.doubleValue();
-
-                String numberWithoutComma = parts[3].replaceAll(",", "");
-                double parsedDouble = Double.parseDouble(numberWithoutComma);
-
-                exchangeRate.setRate(parsedDouble);
-                exchangeRate.setPlatform(48);
-                exchangeRate.setDeliveryFee(0.00);
-                exchangeRate
-                        .setEstimatedDeliveryTime("2024-06-25T23:59:59.999999999Z - 2024-06-26T00:04:59.999999999Z");
-                exchangeRate.setFromCurrency("GBP");
-                exchangeRate.setToCurrency(entryS.getValue());
-                exchangeRate.setLastUpdated(new Date());
-
-                exchangeRateRepo.save(exchangeRate);
-
-                WebElement dropdownContainerRe = driver.findElement(By.xpath(
-                        "//span[contains(@class, 'base-text') and contains(text(), '" + entryS.getValue() + "')]"));
-
-                dropdownContainerRe.click();
-
-            } catch (Exception e) {
-                logger.error("An error occurred: ", e);
-                // e.printStackTrace();
-                // System.out.println("The problem is here");
-            }
-
-        }
-    }finally{
-
-        driver.quit();
-
-    }
 
     }
 

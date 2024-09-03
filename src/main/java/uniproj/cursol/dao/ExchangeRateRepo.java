@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import jakarta.persistence.SqlResultSetMapping;
 import uniproj.cursol.entity.ExchangeRate;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHoldNative;
