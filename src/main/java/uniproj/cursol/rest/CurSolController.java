@@ -2,7 +2,6 @@ package uniproj.cursol.rest;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +31,7 @@ import uniproj.cursol.service.currencyservice.CurrencyService;
 import uniproj.cursol.service.exchangerateservice.ExchangeRateService;
 import uniproj.cursol.service.forecastservice.ForecastExchangeRateService;
 import uniproj.cursol.service.lemfiservice.LemfiService;
+import uniproj.cursol.service.scrapservice.ScrapService;
 
 @RestController
 @RequestMapping("/api")
@@ -66,6 +65,9 @@ public class CurSolController {
     private ContactUsService contactUsService;
 
     @Autowired
+    private ScrapService scrapService;
+
+    @Autowired
     private ForecastRepo forecastRepo;
 
     @PostMapping("/ContactUs")
@@ -92,7 +94,7 @@ public class CurSolController {
     }
 
     @GetMapping("/FetchExchangeRates")
-    @Scheduled(cron = "0 0 * * * ?")
+    // @Scheduled(cron = "0 0 * * * ?")
     public String fetchAndStoreCurrency() {
 
         Long maxId = exchangeRateRepo.findExRateMaxId();
@@ -128,23 +130,15 @@ public class CurSolController {
 
     }
 
+    // @GetMapping("/scrap_rates")
+    // public List<Double> scrapData() {
+    // return scrapService.forecastRates("EUR-to","INR");
+
+    // }
+
     @GetMapping("/fetching-forecast-data")
     public List<ForecastExchangeRate> fetchingForecastData(@RequestParam String currencyPair) {
         List<ForecastExchangeRate> forecastList = forecastRepo.gettingAllForecastData(currencyPair);
-        for (ForecastExchangeRate forecast : forecastList) {
-            // Generate a random number between -3 and +3
-            double randomValue = ThreadLocalRandom.current().nextDouble(-1, 3);
-            randomValue++;
-
-            // Add the random value to the predictedValue
-            double adjustedValue = forecast.getPredictedValue() + randomValue;
-            if (adjustedValue > +forecast.getConfidenceIntervalMax()) {
-                forecast.setPredictedValue(forecast.getPredictedValue());
-            } else {
-                forecast.setPredictedValue(adjustedValue);
-            }
-
-        }
 
         return forecastList;
     }
@@ -159,15 +153,42 @@ public class CurSolController {
                 "GBP to PKR",
                 "GBP to INR",
                 "GBP to NGN",
-                "EURO to PKR",
-                "EURO to INR",
-                "EURO to NGN");
+                "EUR to PKR",
+                "EUR to NGN",
+                "EUR to INR");
+
+        String fromCur;
+        String toCur;
 
         for (String currencyPair : currencyPairs) {
 
+            if (currencyPair.equals("EUR to INR")) {
+
+                String[] parts = currencyPair.split(" to ");
+
+                // Get the "from" currency and truncate it to 3 letters if needed
+                String fromCurrency = parts[0].length() > 3 ? parts[0].substring(0, 3) : parts[0];
+
+                // Construct the final "from-to" string
+                fromCur = fromCurrency + "-to";
+
+                // Store the "to" currency
+                toCur = parts[1];
+
+            } else {
+
+                String[] parts = currencyPair.split(" to ");
+
+                fromCur = parts[0].trim();
+
+                toCur = parts[1].trim();
+            }
+
+            List<Double> rates = scrapService.forecastRates(fromCur, toCur);
+
             IntStream.range(1, 16).forEach(i -> {
                 LocalDate targetDate = LocalDate.now().plusDays(i);
-                forecastExchangeRateService.fetchAndStoreForecast(currencyPair, targetDate);
+                forecastExchangeRateService.fetchAndStoreForecast(currencyPair, targetDate, rates.get(i - 1));
             });
 
             // Call the service method to fetch and store forecast data

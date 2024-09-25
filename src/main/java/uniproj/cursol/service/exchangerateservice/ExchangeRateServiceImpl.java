@@ -247,14 +247,6 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
             return retryAfterSeconds;
         }
     }
-    // @Override
-    // public List<ExchangeRateQueryResultHold>
-    // getExchangeRatesBySourceAndTarget(String sourceCurrency,
-    // String targetCurrency) {
-
-    // return exchangeRateRepo.findBySourceAndTargetCurrency(sourceCurrency,
-    // targetCurrency);
-
-    // }
+   
 
 }

@@ -17,20 +17,20 @@ public interface ExchangeRateRepo extends JpaRepository<ExchangeRate, Long> {
         @Query("SELECT c FROM ExchangeRate c WHERE c.fromCurrency = :sourceCurrency AND c.toCurrency = :targetCurrency")
         List<ExchangeRate> getExRateBySourceAndTarget(String sourceCurrency, String targetCurrency);
 
-        @Query("SELECT new uniproj.cursol.querydtos.ExchangeRateQueryResultHold(e.fromCurrency, e.toCurrency, e.rate, e.deliveryFee, e.estimatedDeliveryTime, e.lastUpdated, p.platformName, p.platformImg, p.platformSiteUrl) "
-                        +
-                        "FROM ExchangeRate e " +
-                        "JOIN Platform p ON e.platformId = p.platformId " +
-                        "WHERE e.exchangeRateId > :lastMaxId " +
-                        "AND e.fromCurrency = :sourceCurrency " +
-                        "AND e.toCurrency = :targetCurrency")
-        List<ExchangeRateQueryResultHold> findLatestExchangeRates(
-                        @Param("lastMaxId") Long lastMaxId,
-                        @Param("sourceCurrency") String sourceCurrency,
-                        @Param("targetCurrency") String targetCurrency);
+                @Query("SELECT new uniproj.cursol.querydtos.ExchangeRateQueryResultHold(e.fromCurrency, e.toCurrency, e.rate, e.deliveryFee, e.estimatedDeliveryTime, e.lastUpdated, p.platformName, p.platformImg, p.platformSiteUrl) "
+                                +
+                                "FROM ExchangeRate e " +
+                                "JOIN Platform p ON e.platformId = p.platformId " +
+                                "WHERE e.exchangeRateId > :lastMaxId " +
+                                "AND e.fromCurrency = :sourceCurrency " +
+                                "AND e.toCurrency = :targetCurrency")
+                List<ExchangeRateQueryResultHold> findLatestExchangeRates(
+                                @Param("lastMaxId") Long lastMaxId,
+                                @Param("sourceCurrency") String sourceCurrency,
+                                @Param("targetCurrency") String targetCurrency);
 
-        @Query("SELECT MAX(e.exchangeRateId) FROM ExchangeRate e")
-        Long findExRateMaxId();
+                @Query("SELECT MAX(e.exchangeRateId) FROM ExchangeRate e")
+                Long findExRateMaxId();
 
         // @Query("SELECT new uniproj.cursol.querydtos.ExchangeRateQueryResultHold(" +
         // "e.fromCurrency, e.toCurrency, e.rate, e.deliveryFee,

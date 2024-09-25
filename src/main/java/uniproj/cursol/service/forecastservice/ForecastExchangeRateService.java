@@ -4,6 +4,6 @@ import java.time.LocalDate;
 
 public interface ForecastExchangeRateService {
 
-    void fetchAndStoreForecast(String currency, LocalDate targetDate);
+    void fetchAndStoreForecast(String currency, LocalDate targetDate, Double rate);
 
 }

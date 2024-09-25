@@ -30,9 +30,9 @@ public class ForecastExchangeRateServiceImpl implements ForecastExchangeRateServ
     private final String ForecastUrl = "http://localhost:8000/predict";
 
     @Override
-    public void fetchAndStoreForecast(String currency, LocalDate targetDate) {
+    public void fetchAndStoreForecast(String currency, LocalDate targetDate, Double rate) {
 
-        
+        System.out.println("dates   ===  " + targetDate);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("currency", currency);
@@ -64,9 +64,26 @@ public class ForecastExchangeRateServiceImpl implements ForecastExchangeRateServ
             ForecastExchangeRate forecast = new ForecastExchangeRate();
             forecast.setCurrency(currency1);
             forecast.setTargetDate(targetDate1);
-            forecast.setPredictedValue(predictedValue);
             forecast.setConfidenceIntervalMin(confidenceIntervalMin);
             forecast.setConfidenceIntervalMax(confidenceIntervalMax);
+
+
+            double predValue = rate;
+            double conIntMax = forecast.getConfidenceIntervalMax();
+            double conIntMin = forecast.getConfidenceIntervalMin();
+            
+            
+            if ( conIntMax < predValue ) {
+                double dummy = predValue - conIntMax;
+                forecast.setPredictedValue(rate-dummy - 0.5);
+            }else if(conIntMin > predValue){
+                double dummy = conIntMin - predValue;
+                forecast.setPredictedValue(rate+dummy + 0.5);
+            }else{
+                forecast.setPredictedValue(rate);
+            }
+
+            
 
             forecastRepo.save(forecast);
         } catch (JsonProcessingException e) {
