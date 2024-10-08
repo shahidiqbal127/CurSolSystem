@@ -10,6 +10,7 @@ import java.util.Map;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -37,10 +38,16 @@ public class LemfiServiceImpl implements LemfiService {
     @Transactional
     public void storingLemfiData() {
 
-        // System.setProperty("webdriver.chrome.driver",
-        // "P:\\UniProject\\chrome-win64\\chrome.exe");
+        // System.setProperty("webdriver.chrome.driver","P:\\UniProject\\chrome-win64\\chrome.exe");
 
-        WebDriver driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless"); 
+        options.addArguments("--no-sandbox");  // Bypass OS security model, necessary for Docker/CI environments
+        options.addArguments("--disable-dev-shm-usage");  // Overcome limited resource problems
+        options.addArguments("--disable-gpu");  // Disable GPU acceleration
+        options.addArguments("--remote-allow-origins=*");
+
+        WebDriver driver = new ChromeDriver(options);
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
