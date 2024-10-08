@@ -97,15 +97,15 @@ public class CurSolController {
     // @Scheduled(cron = "0 0 * * * ?")
     public String fetchAndStoreCurrency() {
 
-        Long maxId = exchangeRateRepo.findExRateMaxId();
+        // Long maxId = exchangeRateRepo.findExRateMaxId();
 
-        ExRateMaxId maxIdEntity = new ExRateMaxId();
-        maxIdEntity.setMaxId(maxId);
-        maxIdRepository.save(maxIdEntity);
+        // ExRateMaxId maxIdEntity = new ExRateMaxId();
+        // maxIdEntity.setMaxId(maxId);
+        // maxIdRepository.save(maxIdEntity);
 
-        taptapSendService.storingTaptapSendData();
-        lemfiService.storingLemfiData();
-        exchangeRateService.fetchAndStoreExchangeRates();
+        // taptapSendService.storingTaptapSendData();
+        // lemfiService.storingLemfiData();
+        // exchangeRateService.fetchAndStoreExchangeRates();
 
         return "Exchange Rate Table and Platform table are updated successfully";
     }
