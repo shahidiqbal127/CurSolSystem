@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -17,11 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import jakarta.transaction.Transactional;
 import uniproj.cursol.dao.ExchangeRateRepo;
 import uniproj.cursol.entity.ExchangeRate;
-
 import org.openqa.selenium.WebDriver;
 
 @Service
@@ -37,8 +34,6 @@ public class LemfiServiceImpl implements LemfiService {
     @Override
     @Transactional
     public void storingLemfiData() {
-
-        // System.setProperty("webdriver.chrome.driver","P:\\UniProject\\chrome-win64\\chrome.exe");
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless"); 
@@ -104,11 +99,6 @@ public class LemfiServiceImpl implements LemfiService {
 
                     ExchangeRate exchangeRate = new ExchangeRate();
 
-                    // NumberFormat format = NumberFormat.getInstance(Locale.GERMANY); // Germany
-                    // uses comma as decimal separator
-                    // Number number = format.parse(parts[3]);
-                    // double parsedDouble = number.doubleValue();
-
                     String numberWithoutComma = parts[3].replaceAll(",", "");
                     double parsedDouble = Double.parseDouble(numberWithoutComma);
 
@@ -131,8 +121,7 @@ public class LemfiServiceImpl implements LemfiService {
 
                 } catch (Exception e) {
                     logger.error("An error occurred: ", e);
-                    // e.printStackTrace();
-                    // System.out.println("The problem is here");
+                    
                 }
 
             }

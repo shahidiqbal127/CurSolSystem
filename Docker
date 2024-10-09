@@ -7,11 +7,25 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install Chrome
-RUN apt-get update && apt-get install -y wget gnupg
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-RUN apt-get update && apt-get install -y google-chrome-stable
+# Install Chrome and necessary dependencies for Selenium
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    unzip \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-glib-1-2 \
+    libgdk-pixbuf2.0-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxrandr2 \
+    xdg-utils \
+    google-chrome-stable
 
 # Install ChromeDriver
 RUN wget -N https://chromedriver.storage.googleapis.com/117.0.5938.62/chromedriver_linux64.zip \
@@ -19,6 +33,8 @@ RUN wget -N https://chromedriver.storage.googleapis.com/117.0.5938.62/chromedriv
     && mv chromedriver /usr/local/bin/ \
     && chmod +x /usr/local/bin/chromedriver
 
+# Expose port if necessary (optional)
+EXPOSE 8080
 
 
 # Run the application
