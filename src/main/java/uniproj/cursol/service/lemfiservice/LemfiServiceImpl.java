@@ -36,11 +36,12 @@ public class LemfiServiceImpl implements LemfiService {
     public void storingLemfiData() {
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); 
-        options.addArguments("--no-sandbox");  // Bypass OS security model, necessary for Docker/CI environments
-        options.addArguments("--disable-dev-shm-usage");  // Overcome limited resource problems
-        options.addArguments("--disable-gpu");  // Disable GPU acceleration
-        options.addArguments("--remote-allow-origins=*");
+            options.addArguments("--headless");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--window-size=1280x800");
+            options.addArguments("--disable-software-rasterizer");
 
         WebDriver driver = new ChromeDriver(options);
 

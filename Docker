@@ -7,8 +7,12 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
+# Add Google's signing key and Chrome's repository
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee -a /etc/apt/sources.list.d/google-chrome.list
+
 # Install Chrome and necessary dependencies for Selenium
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --no-cache && apt-get install -y \
     wget \
     gnupg \
     unzip \
@@ -25,16 +29,20 @@ RUN apt-get update && apt-get install -y \
     libxcomposite1 \
     libxrandr2 \
     xdg-utils \
-    google-chrome-stable
+    google-chrome-stable && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install ChromeDriver
+# Install ChromeDriver (ensure compatibility between Chrome and ChromeDriver)
 RUN wget -N https://chromedriver.storage.googleapis.com/117.0.5938.62/chromedriver_linux64.zip \
     && unzip chromedriver_linux64.zip \
     && mv chromedriver /usr/local/bin/ \
-    && chmod +x /usr/local/bin/chromedriver
+    && chmod 755 /usr/local/bin/chromedriver \
+    && rm chromedriver_linux64.zip
 
 # Expose port if necessary (optional)
 EXPOSE 8080
+
+COPY target/cursol-0.0.1-SNAPSHOT.jar /app/cursol.jar
 
 
 # Run the application
