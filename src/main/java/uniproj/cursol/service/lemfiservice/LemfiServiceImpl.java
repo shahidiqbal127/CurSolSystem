@@ -35,13 +35,15 @@ public class LemfiServiceImpl implements LemfiService {
     @Transactional
     public void storingLemfiData() {
 
+        System.out.println("Lemfi Scraping Service Started");
+
         ChromeOptions options = new ChromeOptions();
-            options.addArguments("--headless");
-            options.addArguments("--no-sandbox");
-            options.addArguments("--disable-dev-shm-usage");
-            options.addArguments("--disable-gpu");
-            options.addArguments("--window-size=1280x800");
-            options.addArguments("--disable-software-rasterizer");
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1280x800");
+        options.addArguments("--disable-software-rasterizer");
 
         WebDriver driver = new ChromeDriver(options);
 
@@ -122,7 +124,7 @@ public class LemfiServiceImpl implements LemfiService {
 
                 } catch (Exception e) {
                     logger.error("An error occurred: ", e);
-                    
+
                 }
 
             }

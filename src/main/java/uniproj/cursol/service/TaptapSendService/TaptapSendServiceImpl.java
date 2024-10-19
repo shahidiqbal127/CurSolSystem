@@ -1,4 +1,5 @@
 package uniproj.cursol.service.TaptapSendService;
+
 import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,22 +40,21 @@ public class TaptapSendServiceImpl implements TaptapSendService {
     @Override
     public void storingTaptapSendData() {
 
+        System.out.println("TapTap Send Scraping Service Started");
+
         int attempt = 0;
 
         while (attempt < MAX_RETRIES) {
-
-            // System.setProperty("webdriver.chrome.driver",
-            // "P:\\UniProject\\chrome-win64\\chrome.exe");
 
             WebDriver driver = null;
 
             try {
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("--headless"); 
-                options.addArguments("--no-sandbox");  // Bypass OS security model, necessary for Docker/CI environments
-            options.addArguments("--disable-dev-shm-usage");  // Overcome limited resource problems
-        options.addArguments("--disable-gpu");  // Disable GPU acceleration
-        options.addArguments("--remote-allow-origins=*");
+                options.addArguments("--headless");
+                options.addArguments("--no-sandbox"); // Bypass OS security model, necessary for Docker/CI environments
+                options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
+                options.addArguments("--disable-gpu"); // Disable GPU acceleration
+                options.addArguments("--remote-allow-origins=*");
 
                 driver = new ChromeDriver(options);
                 WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
@@ -123,7 +123,7 @@ public class TaptapSendServiceImpl implements TaptapSendService {
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "An unexpected error occurred. Attempt: " + (attempt + 1), e);
                 handleRetry(++attempt, e);
-            }  finally {
+            } finally {
                 if (driver != null) {
                     driver.quit(); // <-- Ensure driver is closed after each attempt
                 }

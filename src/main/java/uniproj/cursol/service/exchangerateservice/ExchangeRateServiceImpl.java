@@ -58,6 +58,8 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Override
     public void fetchAndStoreExchangeRates() {
 
+        System.out.println("API Service Started");
+
         String[] sourceCur = { "GBP", "EUR" };
         List<String> targetCur = currencyRepo.findAllCurrencyCodes();
         // String[] targetCur = { "BDT", "PKR", "AED" };
