@@ -39,15 +39,17 @@ public class LemfiServiceImpl implements LemfiService {
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1280x800");
         options.addArguments("--disable-software-rasterizer");
+        options.addArguments("--disable-extensions"); // Disable any extensions
+        options.addArguments("--blink-settings=imagesEnabled=false"); // Disable images
+        options.addArguments("--no-sandbox");
 
         WebDriver driver = new ChromeDriver(options);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
         driver.get("https://lemfi.com/gb/international-money-transfer");
 
@@ -88,7 +90,7 @@ public class LemfiServiceImpl implements LemfiService {
                     WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
                     element.click();
 
-                    Thread.sleep(4000);
+                    Thread.sleep(1000);
                     WebElement detailsElement = wait.until(ExpectedConditions
                             .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
 
