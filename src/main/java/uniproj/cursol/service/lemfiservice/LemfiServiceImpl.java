@@ -49,7 +49,7 @@ public class LemfiServiceImpl implements LemfiService {
 
         WebDriver driver = new ChromeDriver(options);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
         driver.get("https://lemfi.com/gb/international-money-transfer");
 
@@ -90,7 +90,7 @@ public class LemfiServiceImpl implements LemfiService {
                     WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
                     element.click();
 
-                    Thread.sleep(1000);
+                    Thread.sleep(3000);
                     WebElement detailsElement = wait.until(ExpectedConditions
                             .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
 
