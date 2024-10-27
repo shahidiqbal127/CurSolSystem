@@ -125,9 +125,13 @@ public class LemfiServiceImpl implements LemfiService {
 
                     exchangeRateRepo.save(exchangeRate);
 
+                    
+
+
                     WebElement dropdownContainerRe = driver.findElement(By.xpath(
-                            "//span[contains(@class, 'base-text') and contains(text(), '" +
-                                    entryS.getValue() + "')]"));
+    "//div[@class='money-box__selector cursor-pointer']//span[text()='" + entryS.getValue() + "']"
+));
+
 
                     dropdownContainerRe.click();
 
