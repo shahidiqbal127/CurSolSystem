@@ -88,7 +88,9 @@ public class LemfiServiceImpl implements LemfiService {
 
                     System.out.println("the County Map is " + entryS);
 
-                    String xpath = String.format("//p[text()='%s']", entryS.getKey());
+                    String xpath = String.format(
+                            "//li[@class=\"base-dropdown-item\" and @role=\"option\"]//div[contains(@class, \"money-box__selector-option--list\") and .//p[text()='%s']]",
+                            entryS.getKey());
 
                     WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
 
@@ -124,7 +126,8 @@ public class LemfiServiceImpl implements LemfiService {
                     exchangeRateRepo.save(exchangeRate);
 
                     WebElement dropdownContainerRe = driver.findElement(By.xpath(
-                            "//span[contains(@class, 'base-text') and contains(text(), '" + entryS.getValue() + "')]"));
+                            "//span[contains(@class, 'base-text') and contains(text(), '" +
+                                    entryS.getValue() + "')]"));
 
                     dropdownContainerRe.click();
 
