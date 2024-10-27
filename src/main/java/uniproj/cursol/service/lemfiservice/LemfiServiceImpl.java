@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -49,7 +50,7 @@ public class LemfiServiceImpl implements LemfiService {
 
         WebDriver driver = new ChromeDriver(options);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(35));
 
         driver.get("https://lemfi.com/gb/international-money-transfer");
 
@@ -85,9 +86,12 @@ public class LemfiServiceImpl implements LemfiService {
 
                 try {
 
+                    System.out.println("the County Map is " + entryS);
+
                     String xpath = String.format("//p[text()='%s']", entryS.getKey());
 
                     WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+
                     element.click();
 
                     Thread.sleep(3000);
