@@ -1,13 +1,19 @@
 package uniproj.cursol.service.lemfiservice;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -96,7 +102,12 @@ public class LemfiServiceImpl implements LemfiService {
 
                     element.click();
 
-                    Thread.sleep(3000);
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     WebElement detailsElement = wait.until(ExpectedConditions
                             .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
 
@@ -125,21 +136,28 @@ public class LemfiServiceImpl implements LemfiService {
 
                     exchangeRateRepo.save(exchangeRate);
 
-                    
-
-
-                    WebElement dropdownContainerRe = driver.findElement(By.xpath(
-    "//div[@class='money-box__selector cursor-pointer']//span[text()='" + entryS.getValue() + "']"
-));
-
+                    WebElement dropdownContainerRe = driver
+                            .findElement(By.xpath("//div[@class='money-box__selector cursor-pointer']//span[text()='"
+                                    + entryS.getValue() + "']"));
 
                     dropdownContainerRe.click();
 
-                } catch (Exception e) {
-                    logger.error("An error occurred: ", e);
+                } catch (ElementClickInterceptedException e) {
+
+                    // Capture screenshot on error
+                    File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+                    File destinationFile = new File(System.getProperty("user.home") + "/Desktop/screenshot.png"); // Path
+                                                                                                                  // to
+                                                                                                                  // Desktop
+
+                    try {
+                        FileUtils.copyFile(screenshot, destinationFile);
+                        System.out.println("Screenshot saved to Desktop as 'screenshot.png'");
+                    } catch (IOException ioe) {
+                        System.out.println("Failed to save screenshot: " + ioe.getMessage());
+                    }
 
                 }
-
             }
         } finally {
 
