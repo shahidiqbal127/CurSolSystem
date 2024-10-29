@@ -63,41 +63,118 @@ public class LemfiServiceImpl implements LemfiService {
 
         List<String> currencyCodes = new ArrayList<>();
 
-        try {
+        for (WebElement option : optionsList) {
+            WebElement countryElement = option.findElement(By.cssSelector("p.base-text--size-small--bold"));
+            WebElement currencyElement = option.findElement(By.cssSelector("p.base-text--size-x-small"));
 
-            for (WebElement option : optionsList) {
-                WebElement countryElement = option.findElement(By.cssSelector("p.base-text--size-small--bold"));
-                WebElement currencyElement = option.findElement(By.cssSelector("p.base-text--size-x-small"));
+            String country = countryElement.getText();
+            String currency = currencyElement.getText();
 
-                String country = countryElement.getText();
-                String currency = currencyElement.getText();
-
-                String currencyCode = currency.split(" ")[0];
-                if (!countryCurrencyMap.containsValue("EUR")) {
-                    countryCurrencyMap.put(country, currencyCode);
-                }
-
-                addUniqueEntry(countryCurrencyMap, country, currencyCode);
-
-                if (!currencyCodes.contains(currencyCode)) {
-                    currencyCodes.add(currencyCode);
-                }
-
+            String currencyCode = currency.split(" ")[0];
+            if (!countryCurrencyMap.containsValue("EUR")) {
+                countryCurrencyMap.put(country, currencyCode);
             }
 
-            int midpoint = (countryCurrencyMap.size() + 1) / 2;
+            addUniqueEntry(countryCurrencyMap, country, currencyCode);
 
-            Map<String, String> map1 = countryCurrencyMap.entrySet().stream()
-                    .limit(midpoint)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-                            LinkedHashMap::new));
+            if (!currencyCodes.contains(currencyCode)) {
+                currencyCodes.add(currencyCode);
+            }
 
-            Map<String, String> map2 = countryCurrencyMap.entrySet().stream()
-                    .skip(midpoint)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
-                            LinkedHashMap::new));
+        }
+
+        int midpoint = (countryCurrencyMap.size() + 1) / 2;
+
+        Map<String, String> map1 = countryCurrencyMap.entrySet().stream()
+                .limit(midpoint)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+                        LinkedHashMap::new));
+
+        Map<String, String> map2 = countryCurrencyMap.entrySet().stream()
+                .skip(midpoint)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+                        LinkedHashMap::new));
+
+        try {
 
             for (Map.Entry<String, String> entryS : map1.entrySet()) {
+
+            try {
+
+            System.out.println("the County Map is " + entryS);
+
+            String xpath = String.format(
+            "//li[@class=\"base-dropdown-item\" and @role=\"option\"]//div[contains(@class, \"money-box__selector-option--list\") and .//p[text()='%s']]",
+            entryS.getKey());
+
+            WebElement element =
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+
+            element.click();
+
+            try {
+            Thread.sleep(3000);
+            } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            }
+            WebElement detailsElement = wait.until(ExpectedConditions
+            .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
+
+            // Extract the exchange rate
+            WebElement exchangeRateElement = detailsElement
+            .findElement(
+            By.xpath(".//span[contains(text(), 'Exchange rate')]/following-sibling::span"));
+            String exRate = exchangeRateElement.getText().trim();
+
+            String[] parts = exRate.split(" ");
+
+            ExchangeRate exchangeRate = new ExchangeRate();
+
+            String numberWithoutComma = parts[3].replaceAll(",", "");
+            double parsedDouble = Double.parseDouble(numberWithoutComma);
+
+            exchangeRate.setRate(parsedDouble);
+            exchangeRate.setPlatform(48);
+            exchangeRate.setDeliveryFee(0.00);
+            exchangeRate
+            .setEstimatedDeliveryTime(
+            "2024-06-25T23:59:59.999999999Z - 2024-06-26T00:04:59.999999999Z");
+            exchangeRate.setFromCurrency("GBP");
+            exchangeRate.setToCurrency(entryS.getValue());
+            exchangeRate.setLastUpdated(new Date());
+
+            exchangeRateRepo.save(exchangeRate);
+
+            WebElement dropdownContainerRe =
+            wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//div[@class='money-box__selector cursor-pointer']//span[text()='"
+            + entryS.getValue() + "']")));
+
+            dropdownContainerRe.click();
+
+            } catch (Exception e) {
+            logger.error("Error in Lemfi Service" + e);
+            }
+            }
+
+        } finally {
+
+            driver.quit();
+
+        }
+
+        WebDriver driver2 = new ChromeDriver(options);
+        WebDriverWait wait2 = new WebDriverWait(driver2, Duration.ofSeconds(35));
+
+        try {
+
+            driver2.get("https://lemfi.com/gb/international-money-transfer");
+            acceptCookies(driver2, wait2);
+
+            List<WebElement> optionsList2 = gettingSupportedCurrencies(driver2);
+
+            for (Map.Entry<String, String> entryS : map2.entrySet()) {
 
                 try {
 
@@ -107,7 +184,7 @@ public class LemfiServiceImpl implements LemfiService {
                             "//li[@class=\"base-dropdown-item\" and @role=\"option\"]//div[contains(@class, \"money-box__selector-option--list\") and .//p[text()='%s']]",
                             entryS.getKey());
 
-                    WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+                    WebElement element = wait2.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
 
                     element.click();
 
@@ -117,7 +194,8 @@ public class LemfiServiceImpl implements LemfiService {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    WebElement detailsElement = wait.until(ExpectedConditions
+
+                    WebElement detailsElement = wait2.until(ExpectedConditions
                             .visibilityOfElementLocated(By.className("molecule-conversion-box__details")));
 
                     // Extract the exchange rate
@@ -145,7 +223,7 @@ public class LemfiServiceImpl implements LemfiService {
 
                     exchangeRateRepo.save(exchangeRate);
 
-                    WebElement dropdownContainerRe = wait.until(ExpectedConditions.elementToBeClickable(
+                    WebElement dropdownContainerRe = wait2.until(ExpectedConditions.elementToBeClickable(
                             By.xpath("//div[@class='money-box__selector cursor-pointer']//span[text()='"
                                     + entryS.getValue() + "']")));
 
@@ -155,12 +233,9 @@ public class LemfiServiceImpl implements LemfiService {
                     logger.error("Error in Lemfi Service" + e);
                 }
             }
-            
-            
+
         } finally {
-
-            driver.quit();
-
+            driver2.quit();
         }
 
     }
