@@ -102,10 +102,29 @@ public class CurSolController {
         ExRateMaxId maxIdEntity = new ExRateMaxId();
         maxIdEntity.setMaxId(maxId);
         maxIdRepository.save(maxIdEntity);
+        try {
 
-        taptapSendService.storingTaptapSendData();
-        // lemfiService.storingLemfiData();
-        // exchangeRateService.fetchAndStoreExchangeRates();
+            Thread.sleep(2000);
+            // Call the first service method
+            taptapSendService.storingTaptapSendData();
+
+            // Add a delay of 2 seconds (2000 milliseconds)
+            Thread.sleep(2000);
+
+            // Call the second service method
+            lemfiService.storingLemfiData();
+
+            // Add a delay of 2 seconds
+            Thread.sleep(2000);
+
+            // Call the third service method
+            exchangeRateService.fetchAndStoreExchangeRates();
+
+        } catch (InterruptedException e) {
+            // Handle interrupted exception
+            Thread.currentThread().interrupt(); // Restore interrupted status
+            System.out.println("Sleep was interrupted.");
+        }
 
         return "Exchange Rate Table and Platform table are updated successfully on railway";
     }
