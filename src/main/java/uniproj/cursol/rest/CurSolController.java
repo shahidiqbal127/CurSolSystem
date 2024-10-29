@@ -103,9 +103,9 @@ public class CurSolController {
         maxIdEntity.setMaxId(maxId);
         maxIdRepository.save(maxIdEntity);
 
-        // taptapSendService.storingTaptapSendData();
+        taptapSendService.storingTaptapSendData();
         lemfiService.storingLemfiData();
-        // exchangeRateService.fetchAndStoreExchangeRates();
+        exchangeRateService.fetchAndStoreExchangeRates();
 
         return "Exchange Rate Table and Platform table are updated successfully on railway";
     }
