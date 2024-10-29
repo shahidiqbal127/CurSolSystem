@@ -148,7 +148,7 @@ public class LemfiServiceImpl implements LemfiService {
 
             WebElement dropdownContainerRe =
             wait.until(ExpectedConditions.elementToBeClickable(
-            By.xpath("//div[@class='money-box__selector cursor-pointer']//span[text()='"
+            By.xpath("//div[@class='money-box']//span[text()='"
             + entryS.getValue() + "']")));
 
             dropdownContainerRe.click();
@@ -224,8 +224,10 @@ public class LemfiServiceImpl implements LemfiService {
                     exchangeRateRepo.save(exchangeRate);
 
                     WebElement dropdownContainerRe = wait2.until(ExpectedConditions.elementToBeClickable(
-                            By.xpath("//div[@class='money-box__selector cursor-pointer']//span[text()='"
+                            By.xpath("//div[@class='money-box']//span[text()='"
                                     + entryS.getValue() + "']")));
+
+                                    Thread.sleep(3000);
 
                     dropdownContainerRe.click();
 
