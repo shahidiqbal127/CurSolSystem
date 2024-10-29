@@ -6,14 +6,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
+import java.util.stream.Collectors;
 import org.openqa.selenium.By;
-import org.openqa.selenium.ElementClickInterceptedException;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -88,7 +85,19 @@ public class LemfiServiceImpl implements LemfiService {
 
             }
 
-            for (Map.Entry<String, String> entryS : countryCurrencyMap.entrySet()) {
+            int midpoint = (countryCurrencyMap.size() + 1) / 2;
+
+            Map<String, String> map1 = countryCurrencyMap.entrySet().stream()
+                    .limit(midpoint)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+                            LinkedHashMap::new));
+
+            Map<String, String> map2 = countryCurrencyMap.entrySet().stream()
+                    .skip(midpoint)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,
+                            LinkedHashMap::new));
+
+            for (Map.Entry<String, String> entryS : map1.entrySet()) {
 
                 try {
 
@@ -142,23 +151,12 @@ public class LemfiServiceImpl implements LemfiService {
 
                     dropdownContainerRe.click();
 
-                } catch (ElementClickInterceptedException e) {
-
-                    // Capture screenshot on error
-                    File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-                    File destinationFile = new File(System.getProperty("user.home") + "/Desktop/screenshot.png"); // Path
-                                                                                                                  // to
-                                                                                                                  // Desktop
-
-                    try {
-                        FileUtils.copyFile(screenshot, destinationFile);
-                        System.out.println("Screenshot saved to Desktop as 'screenshot.png'");
-                    } catch (IOException ioe) {
-                        System.out.println("Failed to save screenshot: " + ioe.getMessage());
-                    }
-
+                } catch (Exception e) {
+                    logger.error("Error in Lemfi Service" + e);
                 }
             }
+            
+            
         } finally {
 
             driver.quit();
