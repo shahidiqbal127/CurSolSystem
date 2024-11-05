@@ -92,7 +92,7 @@ public class CurSolController {
     @GetMapping("/fetch-currencies")
     public String FetchAndStoreCurrencyData() {
         int kgf = currencyService.fetchAndStoreCurrencyData();
-        return "Currencies fetched and stored successfully " + kgf;
+        return "Currencies fetched and stored successfully ::::" + kgf;
     }
 
     @GetMapping("/FetchExchangeRates")
