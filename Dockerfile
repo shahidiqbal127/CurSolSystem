@@ -36,7 +36,7 @@ RUN apt-get update && \
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee -a /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
-    apt-get install -y google-chrome-stable=130.0.6723.93-1 
+    apt-get install -y google-chrome-stable 
 
 # Install the specific version of ChromeDriver for Linux
 RUN wget -N https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/130.0.6723.93/linux64/chromedriver-linux64.zip && \
