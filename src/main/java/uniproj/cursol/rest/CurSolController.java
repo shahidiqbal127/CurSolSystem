@@ -34,7 +34,7 @@ import uniproj.cursol.service.forecastservice.ForecastExchangeRateService;
 import uniproj.cursol.service.lemfiservice.LemfiService;
 import uniproj.cursol.service.scrapservice.ScrapService;
 
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
+@CrossOrigin(origins = "https://cursolfrontend-production.up.railway.app", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 public class CurSolController {
