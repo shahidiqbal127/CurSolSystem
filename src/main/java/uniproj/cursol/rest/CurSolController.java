@@ -9,6 +9,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,7 +97,7 @@ public class CurSolController {
     }
 
     @GetMapping("/FetchExchangeRates")
-    // @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 0 8,12,16,20,23 * * ?")
     public String fetchAndStoreCurrency() {
 
         Long maxId = exchangeRateRepo.findExRateMaxId();
