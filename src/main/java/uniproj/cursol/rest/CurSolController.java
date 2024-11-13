@@ -97,7 +97,6 @@ public class CurSolController {
     }
 
     @GetMapping("/FetchExchangeRates")
-    @Scheduled(cron = "0 0 8,12,16,20,23 * * ?")
     public String fetchAndStoreCurrency() {
 
         Long maxId = exchangeRateRepo.findExRateMaxId();
