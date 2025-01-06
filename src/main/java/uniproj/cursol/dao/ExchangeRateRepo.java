@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import uniproj.cursol.entity.ExchangeRate;
+import uniproj.cursol.querydtos.ExchangeRateProjection;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHoldNative;
 
@@ -17,20 +18,36 @@ public interface ExchangeRateRepo extends JpaRepository<ExchangeRate, Long> {
         @Query("SELECT c FROM ExchangeRate c WHERE c.fromCurrency = :sourceCurrency AND c.toCurrency = :targetCurrency")
         List<ExchangeRate> getExRateBySourceAndTarget(String sourceCurrency, String targetCurrency);
 
-                @Query("SELECT new uniproj.cursol.querydtos.ExchangeRateQueryResultHold(e.fromCurrency, e.toCurrency, e.rate, e.deliveryFee, e.estimatedDeliveryTime, e.lastUpdated, p.platformName, p.platformImg, p.platformSiteUrl) "
-                                +
-                                "FROM ExchangeRate e " +
-                                "JOIN Platform p ON e.platformId = p.platformId " +
-                                "WHERE e.exchangeRateId > :lastMaxId " +
-                                "AND e.fromCurrency = :sourceCurrency " +
-                                "AND e.toCurrency = :targetCurrency")
-                List<ExchangeRateQueryResultHold> findLatestExchangeRates(
-                                @Param("lastMaxId") Long lastMaxId,
-                                @Param("sourceCurrency") String sourceCurrency,
-                                @Param("targetCurrency") String targetCurrency);
+        // @Query("SELECT new
+        // uniproj.cursol.querydtos.ExchangeRateQueryResultHold(e.fromCurrency,
+        // e.toCurrency, e.rate, e.deliveryFee, e.estimatedDeliveryTime, e.lastUpdated,
+        // p.platformName, p.platformImg, p.platformSiteUrl) "
+        // +
+        // "FROM ExchangeRate e " +
+        // "JOIN Platform p ON e.platformId = p.platformId " +
+        // "WHERE e.exchangeRateId > :lastMaxId " +
+        // "AND e.fromCurrency = :sourceCurrency " +
+        // "AND e.toCurrency = :targetCurrency")
+        // List<ExchangeRateQueryResultHold> findLatestExchangeRates(
+        // @Param("lastMaxId") Long lastMaxId,
+        // @Param("sourceCurrency") String sourceCurrency,
+        // @Param("targetCurrency") String targetCurrency);
 
-                @Query("SELECT MAX(e.exchangeRateId) FROM ExchangeRate e")
-                Long findExRateMaxId();
+        @Query("SELECT e.fromCurrency AS fromCurrency, e.toCurrency AS toCurrency, e.rate AS rate, " +
+                        "e.deliveryFee AS deliveryFee, e.estimatedDeliveryTime AS estimatedDeliveryTime, " +
+                        "e.lastUpdated AS lastUpdated, p.platformName AS platformName, " +
+                        "p.platformImg AS platformImg, p.platformSiteUrl AS platformSiteUrl " +
+                        "FROM ExchangeRate e JOIN Platform p ON e.platformId = p.platformId " +
+                        "WHERE e.exchangeRateId > :lastMaxId " +
+                        "AND e.fromCurrency = :sourceCurrency " +
+                        "AND e.toCurrency = :targetCurrency")
+        List<ExchangeRateProjection> findLatestExchangeRates(
+                        @Param("lastMaxId") Long lastMaxId,
+                        @Param("sourceCurrency") String sourceCurrency,
+                        @Param("targetCurrency") String targetCurrency);
+
+        @Query("SELECT MAX(e.exchangeRateId) FROM ExchangeRate e")
+        Long findExRateMaxId();
 
         // @Query("SELECT new uniproj.cursol.querydtos.ExchangeRateQueryResultHold(" +
         // "e.fromCurrency, e.toCurrency, e.rate, e.deliveryFee,

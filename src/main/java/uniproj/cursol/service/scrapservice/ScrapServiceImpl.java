@@ -1,9 +1,12 @@
 package uniproj.cursol.service.scrapservice;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.regex.Matcher;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -11,15 +14,80 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uniproj.cursol.dao.ForecastRepo;
+import uniproj.cursol.entity.ForecastExchangeRate;
 
 @Service
 public class ScrapServiceImpl implements ScrapService {
 
+    @Autowired
+    private ForecastRepo forecastRepo;
+
     private String baseUrl = "https://30rates.com/%s-%s";
 
     @Override
-    public List<Double> forecastRates(String sourceCur, String targetCur) {
+    public void forecastRates() {
+
+        forecastRepo.deleteOldForecasts();
+
+        List<String> currencyPairs = List.of(
+            "GBP to PKR",
+            "GBP to INR",
+            "GBP to NGN",
+            "EUR to PKR",
+            "EUR to NGN",
+            "EUR to INR");
+
+        String fromCur = null;
+        String toCur = null;
+
+        for (String currencyPair : currencyPairs) {
+
+            if (currencyPair.equals("EUR to INR")) {
+
+                String[] parts = currencyPair.split(" to ");
+
+                // Get the "from" currency and truncate it to 3 letters if needed
+                String fromCurrency = parts[0].length() > 3 ? parts[0].substring(0, 3) : parts[0];
+
+                // Construct the final "from-to" string
+                fromCur = fromCurrency + "-to";
+
+                // Store the "to" currency
+                toCur = parts[1];
+
+            } else {
+
+                String[] parts = currencyPair.split(" to ");
+
+                fromCur = parts[0].trim();
+
+                toCur = parts[1].trim();
+            }
+
+            List<Double> rates = scrapingRates(fromCur, toCur);
+        double minRate = Collections.min(rates);
+        double maxRate = Collections.max(rates);
+
+        IntStream.range(1, 16).forEach(i -> {
+            LocalDate targetDate = LocalDate.now().plusDays(i);
+            storingForecasting(minRate - 1.8, maxRate + 1.8 , currencyPair, targetDate, rates.get(i - 1));
+        });
+
+
+        }
+
+        
+
+       
+
+        
+    }
+
+    private List<Double> scrapingRates(String sourceCur, String targetCur){
 
         List<Double> rates = new ArrayList<>();
 
@@ -73,6 +141,19 @@ public class ScrapServiceImpl implements ScrapService {
         }
 
         return rates;
+
+    }
+
+    private void storingForecasting(Double minRate, Double maxRate, String currency, LocalDate targetDate, Double rate){
+
+        ForecastExchangeRate forecast = new ForecastExchangeRate();
+            forecast.setCurrency(currency);
+            forecast.setTargetDate(targetDate);
+            forecast.setConfidenceIntervalMin(minRate);
+            forecast.setConfidenceIntervalMax(maxRate);
+            forecast.setPredictedValue(rate);
+
+            forecastRepo.save(forecast);
 
     }
 
