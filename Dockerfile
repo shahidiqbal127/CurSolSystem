@@ -39,7 +39,7 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
     apt-get install -y google-chrome-stable 
 
 # Install the specific version of ChromeDriver for Linux
-RUN wget -N https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/130.0.6723.93/linux64/chromedriver-linux64.zip && \
+RUN wget -N https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/132.0.6834.83/linux64/chromedriver-linux64.zip && \
     unzip chromedriver-linux64.zip && \
     mv chromedriver-linux64/chromedriver /usr/local/bin/ && \
     chmod 755 /usr/local/bin/chromedriver && \
