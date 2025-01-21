@@ -1,6 +1,7 @@
 package uniproj.cursol.rest;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -26,6 +27,7 @@ import uniproj.cursol.dto.CurrencyCodeAndFlagsDTO;
 import uniproj.cursol.entity.ContactUs;
 import uniproj.cursol.entity.ExRateMaxId;
 import uniproj.cursol.entity.ForecastExchangeRate;
+import uniproj.cursol.querydtos.ExchangeRateProjection;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
 import uniproj.cursol.service.TaptapSendService.TaptapSendService;
 import uniproj.cursol.service.contactusservice.ContactUsService;
@@ -87,7 +89,10 @@ public class CurSolController {
 
     @GetMapping("/CurrencyCodeAndFlags")
     public List<CurrencyCodeAndFlagsDTO> getCurrencyCodesAndCountryFlags() {
-        return currencyService.getCurrencyCodesAndCountryFlags();
+
+        List<CurrencyCodeAndFlagsDTO> currencyCodesandFlags = currencyService.getCurrencyCodesAndCountryFlags();
+
+        return currencyCodesandFlags;
     }
 
     @GetMapping("/fetch-currencies")
@@ -131,16 +136,11 @@ public class CurSolController {
         return "Exchange Rate Table and Platform table are updated successfully on railway";
     }
 
-    // @GetMapping("/bySourceAndTarget")
-    // public List<ExchangeRate> getCurrenciesBySourceAndTarget(@RequestParam String
-    // source, @RequestParam String target) {
-    // return exchangeRateService.getExRateBySourceAndTarget(source, target);
-    // }
-
     @GetMapping("/ExchangeRateConversion")
-    public List<ExchangeRateQueryResultHold> getExchangeRatesBySourceAndTarget(@RequestParam String source,
+    public List<ExchangeRateProjection> getExchangeRatesBySourceAndTarget(@RequestParam String source,
             @RequestParam String target) {
-        return exchangeRateService.getLatestExchangeRates(source, target);
+        List<ExchangeRateProjection> exchangeRates = exchangeRateService.getLatestExchangeRates(source, target);
+        return exchangeRates;
     }
 
     @GetMapping("/HistoricalRates")
@@ -150,12 +150,6 @@ public class CurSolController {
         return exchangeRateRepoEM.findHistoricalExchangeRates(datePattern, source, target);
 
     }
-
-    // @GetMapping("/scrap_rates")
-    // public List<Double> scrapData() {
-    // return scrapService.forecastRates("EUR-to","INR");
-
-    // }
 
     @GetMapping("/fetching-forecast-data")
     public List<ForecastExchangeRate> fetchingForecastData(@RequestParam String currencyPair) {
@@ -168,53 +162,57 @@ public class CurSolController {
     // @Scheduled(cron = "0 0 * * * ?")
     public String fetchForecast() {
 
-        forecastRepo.deleteOldForecasts();
 
-        List<String> currencyPairs = List.of(
-                "GBP to PKR",
-                "GBP to INR",
-                "GBP to NGN",
-                "EUR to PKR",
-                "EUR to NGN",
-                "EUR to INR");
 
-        String fromCur;
-        String toCur;
+        // forecastRepo.deleteOldForecasts();
 
-        for (String currencyPair : currencyPairs) {
+        // List<String> currencyPairs = List.of(
+        //         "GBP to PKR",
+        //         "GBP to INR",
+        //         "GBP to NGN",
+        //         "EUR to PKR",
+        //         "EUR to NGN",
+        //         "EUR to INR");
 
-            if (currencyPair.equals("EUR to INR")) {
+        // String fromCur;
+        // String toCur;
 
-                String[] parts = currencyPair.split(" to ");
+        // for (String currencyPair : currencyPairs) {
 
-                // Get the "from" currency and truncate it to 3 letters if needed
-                String fromCurrency = parts[0].length() > 3 ? parts[0].substring(0, 3) : parts[0];
+        //     if (currencyPair.equals("EUR to INR")) {
 
-                // Construct the final "from-to" string
-                fromCur = fromCurrency + "-to";
+        //         String[] parts = currencyPair.split(" to ");
 
-                // Store the "to" currency
-                toCur = parts[1];
+        //         // Get the "from" currency and truncate it to 3 letters if needed
+        //         String fromCurrency = parts[0].length() > 3 ? parts[0].substring(0, 3) : parts[0];
 
-            } else {
+        //         // Construct the final "from-to" string
+        //         fromCur = fromCurrency + "-to";
 
-                String[] parts = currencyPair.split(" to ");
+        //         // Store the "to" currency
+        //         toCur = parts[1];
 
-                fromCur = parts[0].trim();
+        //     } else {
 
-                toCur = parts[1].trim();
-            }
+        //         String[] parts = currencyPair.split(" to ");
 
-            List<Double> rates = scrapService.forecastRates(fromCur, toCur);
+        //         fromCur = parts[0].trim();
 
-            IntStream.range(1, 16).forEach(i -> {
-                LocalDate targetDate = LocalDate.now().plusDays(i);
-                forecastExchangeRateService.fetchAndStoreForecast(currencyPair, targetDate, rates.get(i - 1));
-            });
+        //         toCur = parts[1].trim();
+        //     }
 
-            // Call the service method to fetch and store forecast data
+            scrapService.forecastRates();
+        //     double minRate = Collections.min(rates);
+        //     double maxRate = Collections.max(rates);
 
-        }
+        //     IntStream.range(1, 16).forEach(i -> {
+        //         LocalDate targetDate = LocalDate.now().plusDays(i);
+        //         forecastExchangeRateService.fetchAndStoreForecast(currencyPair, targetDate, rates.get(i - 1));
+        //     });
+
+        //     // Call the service method to fetch and store forecast data
+
+        // }
         // Return a success message
         return "Forecast data fetched and saved successfully!";
     }
@@ -223,17 +221,5 @@ public class CurSolController {
     public void runTaskOnStartup() {
         // fetchAndStoreCurrency();
     }
-
-    // @GetMapping("/fetch-taptapsendrates")
-    // public String fetchTaptapSendRates() {
-    // taptapSendService.storingTaptapSendData();
-    // return "Exchange Rate Table and Platform table are updated successfully";
-    // }
-
-    // @GetMapping("/fetch-lamfi")
-    // public String lemfiData() {
-    // lemfiService.storingLemfiData();
-    // return "Lemfi done";
-    // }
 
 }

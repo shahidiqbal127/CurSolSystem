@@ -1,5 +1,6 @@
 package uniproj.cursol.service.exchangerateservice;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,9 +27,11 @@ import uniproj.cursol.dto.exchangerateDTOs.QuoteDTO;
 import uniproj.cursol.dto.exchangerateDTOs.RootDTO;
 import uniproj.cursol.entity.ExchangeRate;
 import uniproj.cursol.entity.Platform;
+import uniproj.cursol.querydtos.ExchangeRateProjection;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHold;
 import uniproj.cursol.querydtos.ExchangeRateQueryResultHoldNative;
 import uniproj.cursol.service.platformservice.PlatformService;
+import uniproj.cursol.service.redisservice.RedisService;
 
 @Service
 public class ExchangeRateServiceImpl implements ExchangeRateService {
@@ -50,6 +53,9 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     @Autowired
     private MaxIdRepository maxIdRepository;
+
+    @Autowired
+    private RedisService redisService;
 
     private final String comparisonApiUrl = "https://api.transferwise.com/v3/comparisons/";
 
@@ -222,11 +228,21 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public List<ExchangeRateQueryResultHold> getLatestExchangeRates(String sourceCurrency, String targetCurrency) {
+    public List<ExchangeRateProjection> getLatestExchangeRates(String sourceCurrency, String targetCurrency) {
+
+        String cacheKey = "exchangeRates:" + sourceCurrency + ":" + targetCurrency;
+        List<ExchangeRateProjection> cachedRates = redisService.getCachedData(cacheKey, ExchangeRateProjection.class);
+        if (cachedRates != null) {
+            // Return the cached data if available
+            return cachedRates;
+        }
         Long lastMaxId = maxIdRepository.getExRateMaxId();
 
         // Query the latest exchange rates using the stored max ID
-        return exchangeRateRepo.findLatestExchangeRates(lastMaxId, sourceCurrency, targetCurrency);
+        List<ExchangeRateProjection> exchangeRates = exchangeRateRepo.findLatestExchangeRates(lastMaxId, sourceCurrency, targetCurrency);
+        
+        redisService.setCacheData(cacheKey, exchangeRates, Duration.ofHours(4));
+        return exchangeRates;
     }
 
     @Override
